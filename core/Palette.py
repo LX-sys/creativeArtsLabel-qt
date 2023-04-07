@@ -56,7 +56,6 @@ class Palette(QWidget):
         super(Palette, self).__init__(*args,**kwargs)
         
         self.painter = QPainter()
-        self.painter.setRenderHints(qt.Antialiasing | qt.SmoothPixmapTransform)
 
         op = QPen()
         op.setColor(QColor(255,0,0))
@@ -82,8 +81,6 @@ class Palette(QWidget):
 
         # 开启鼠标跟踪
         self.setMouseTracking(False)
-
-        self.painter.setBrush(self.options["bg"])
 
     # 切换绘制的图形
     def setGraph(self,name):
@@ -138,10 +135,12 @@ class Palette(QWidget):
             if self.graphs.shape() in ["rect","ellipse"]:
                 x, y = self.mouse_info["click_pos"].x(),self.mouse_info["click_pos"].y()
                 w, h = e.x()-x,e.y()-y
-                if w < 0 or h < 0:
-                    w,h = abs(w),abs(h)
-                    x = x-w
+                if h < 0:
+                    h = abs(h)
                     y = y-h
+                if w < 0:
+                    w = abs(w)
+                    x = x -w
                 self.graphs.appendPathInformation((x, y, w, h))
             elif self.graphs.shape() == "line":
                 x1, y1 = self.mouse_info["click_pos"].x(), self.mouse_info["click_pos"].y()
@@ -149,7 +148,7 @@ class Palette(QWidget):
                 self.graphs.appendPathInformation((x1, y1, x2, y2))
             elif self.graphs.shape() == "freedomLine":
                 self.graphs.appendPathInformation(None) # 加入一个断点,防止所有画的图都是连续的
-                print(self.graphs.getPathInformation("freedomLine"))
+                # print(self.graphs.getPathInformation("freedomLine"))
             self.mouse_info["isClick"] = False
             self.mouse_info["click_pos"] = QPoint(0,0)
 
@@ -164,6 +163,8 @@ class Palette(QWidget):
 
     def paintEvent(self, e:QPaintEvent):
         self.painter.begin(self)
+        self.painter.setBrush(self.options["bg"])
+        self.painter.setRenderHints(qt.Antialiasing | qt.SmoothPixmapTransform)
         self.painter.drawRect(e.rect())
 
          # 优先渲染图形管理中的图形
